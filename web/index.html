@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mandate — Agentic Commerce</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0806; --panel:#15100B; --panel-2:#1B140D; --surface:#120D08;
+  --line:rgba(232,199,140,.12); --line-soft:rgba(232,199,140,.07);
+  --txt:#F3E9D8; --txt-dim:#C9BCA6; --dim:#8C8071;
+  --gold:#E8B968; --gold-2:#C98A3E; --gold-deep:#A85F26; --cream:#F7EFDD;
+  --green:#7FBE8C; --red:#E06555; --amber:#E8B968;
+}
+body{background:var(--bg);color:var(--txt);font-family:Inter,-apple-system,sans-serif;
+  min-height:100vh;overflow-x:hidden;letter-spacing:.1px}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(62% 50% at 12% 108%, rgba(232,185,104,.20), transparent 65%),
+    radial-gradient(58% 46% at 90% 104%, rgba(168,95,38,.22), transparent 62%),
+    radial-gradient(50% 34% at 50% -8%, rgba(232,185,104,.10), transparent 60%),
+    linear-gradient(180deg,#0A0806 0%,#0D0A06 100%)}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E")}
+.wrap{position:relative;z-index:1;max-width:1560px;margin:0 auto;padding:36px 36px 52px}
+
+header{display:flex;align-items:center;gap:16px;margin-bottom:30px}
+.logo{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--gold),var(--gold-deep));
+  box-shadow:0 10px 26px rgba(232,185,104,.28),inset 0 1px 0 rgba(255,255,255,.25)}
+.logo svg{width:21px;height:21px;color:#20140A}
+h1{font-family:'Fraunces',serif;font-size:25px;font-weight:500;letter-spacing:-.2px;color:var(--cream)}
+.sub{font-size:12.5px;color:var(--dim);margin-top:3px}
+.spacer{flex:1}
+
+.chip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
+  font-size:11.5px;font-weight:600;border:1px solid var(--line);color:var(--txt-dim);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  box-shadow:0 2px 10px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.03)}
+.chip svg{width:13px;height:13px;color:var(--gold)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px rgba(232,185,104,.20);animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ok{color:var(--green)} .bad{color:var(--red)} .warn{color:var(--amber)}
+
+.grid{display:grid;grid-template-columns:330px 1fr 470px;gap:22px;align-items:start}
+@media(max-width:1360px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:20px}
+
+.card{background:linear-gradient(180deg,var(--panel-2) 0%,var(--panel) 100%);
+  border:1px solid var(--line);border-radius:20px;padding:22px;
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 20px 40px -22px rgba(0,0,0,.65);
+  transition:box-shadow .28s,transform .28s,border-color .28s;
+  animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.card:hover{transform:translateY(-2px);border-color:rgba(232,185,104,.28);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 26px 48px -20px rgba(232,185,104,.16)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.ctitle{display:flex;align-items:center;gap:10px;font-size:11.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.9px;color:var(--gold);margin-bottom:16px;
+  padding-bottom:14px;border-bottom:1px solid var(--line-soft);position:relative}
+.ctitle::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,rgba(232,185,104,.55),transparent 75%)}
+.ctitle svg{width:15px;height:15px;color:var(--gold)}
+
+label{display:block;font-size:11.5px;color:var(--dim);margin:14px 0 7px;font-weight:500}
+input,select{width:100%;padding:11px 14px;border-radius:11px;border:1px solid var(--line);
+  background:#0E0A06;color:var(--txt);font-family:inherit;font-size:13.5px;
+  transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus{outline:0;border-color:var(--gold);box-shadow:0 0 0 3px rgba(232,185,104,.14)}
+select{color-scheme:dark}
+
+button{width:100%;padding:12px;border:0;border-radius:12px;color:#20140A;cursor:pointer;
+  font-family:inherit;font-size:13.5px;font-weight:700;
+  background:linear-gradient(135deg,var(--gold),var(--gold-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
+  transition:transform .16s,box-shadow .22s}
+button:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px rgba(232,185,104,.30)}
+button:active{transform:translateY(0) scale(.99)}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--dim);box-shadow:none}
+button.ghost:hover{border-color:var(--gold);color:var(--gold);box-shadow:none;transform:none}
+.row{display:flex;gap:10px;margin-top:12px}
+
+.meter{height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;margin:13px 0 9px}
+.meter i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--gold-deep),var(--gold));
+  transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;padding:9px 0;
+  border-bottom:1px solid var(--line-soft)}
+.kv span:first-child{color:var(--dim);flex-shrink:0}
+.kv span:last-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--txt);
+  text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.chat{display:flex;flex-direction:column;height:660px}
+.msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:13px;padding-right:8px}
+.msg{max-width:82%;padding:13px 17px;border-radius:16px;font-size:13.5px;line-height:1.62;
+  animation:rise .35s both;white-space:pre-wrap}
+.me{align-self:flex-end;background:linear-gradient(135deg,var(--gold),var(--gold-deep));
+  color:#20140A;border-bottom-right-radius:5px;font-weight:500}
+.ai{align-self:flex-start;background:var(--surface);border:1px solid var(--line);
+  border-bottom-left-radius:5px;color:var(--txt-dim)}
+.empty{color:var(--dim);font-size:13px;text-align:center;margin:auto;line-height:1.85}
+.composer{display:flex;gap:9px;margin-top:16px}
+.composer input{flex:1}
+.composer button{width:auto;padding:12px 24px}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.quick button{width:auto;padding:7px 14px;font-size:11.5px;font-weight:500;
+  background:var(--surface);border:1px solid var(--line);color:var(--dim);box-shadow:none}
+.quick button:hover{color:var(--gold);border-color:rgba(232,185,104,.4);box-shadow:none;transform:none}
+
+.trail{max-height:660px;overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+.ent{padding:12px 15px;border-radius:14px;background:var(--surface);
+  border:1px solid var(--line);border-left-width:3px;animation:rise .35s both;
+  cursor:pointer;transition:background .18s,border-color .18s}
+.ent:hover{background:#171009;border-color:rgba(232,185,104,.26)}
+.ent.ALLOW{border-left-color:var(--green)}
+.ent.DENY{border-left-color:var(--red)}
+.ent.EXECUTED,.ent.PAYMENT_SETTLED{border-left-color:#D9C48A}
+.ent.PAYMENT_DECLINED,.ent.EXEC_FAILED{border-left-color:var(--amber)}
+.ent.PROPOSE{border-left-color:var(--gold-deep)}
+.ent.SEARCH{border-left-color:rgba(232,199,140,.22)}
+
+.ehead{display:flex;align-items:center;gap:9px}
+.tag{font-size:9.5px;font-weight:700;letter-spacing:.6px;padding:3px 9px;border-radius:6px;
+  background:rgba(232,185,104,.12);color:var(--gold);flex-shrink:0}
+.ent.ALLOW .tag{background:rgba(127,190,140,.14);color:var(--green)}
+.ent.DENY .tag{background:rgba(224,101,85,.14);color:var(--red)}
+.seq{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim);flex-shrink:0}
+.gist{font-size:11.5px;color:var(--txt-dim);margin-left:auto;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:54%;text-align:right}
+.ent.ALLOW .gist{color:var(--green)}
+.ent.DENY .gist{color:var(--red)}
+.caret{width:13px;height:13px;color:var(--dim);flex-shrink:0;transition:transform .2s}
+.ent.open .caret{transform:rotate(90deg)}
+
+.detail{max-height:0;overflow:hidden;transition:max-height .28s cubic-bezier(.2,.8,.2,1)}
+.ent.open .detail{max-height:460px}
+.ebody{font-size:11.5px;color:var(--dim);line-height:1.6;padding-top:11px;
+  font-family:'JetBrains Mono',monospace;word-break:break-word;white-space:pre-wrap}
+.ent.DENY .ebody{color:#EFA79B}
+.ent.ALLOW .ebody{color:#A9D6B3}
+.hash{font-size:9.5px;color:rgba(232,199,140,.28);margin-top:8px;font-family:'JetBrains Mono',monospace}
+
+.paybtn{display:inline-block;margin-top:11px;padding:8px 15px;border-radius:10px;
+  font-size:11.5px;font-weight:700;text-decoration:none;color:#20140A;
+  background:linear-gradient(135deg,var(--gold),var(--gold-deep));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);transition:transform .16s,box-shadow .22s}
+.paybtn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(232,185,104,.3)}
+.linkrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.linkrow:last-child{border-bottom:0}
+.lamt{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txt)}
+.lstat{font-size:10px;margin-top:3px;text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.lstat.unpaid{color:var(--dim)}
+.lstat.paid{color:var(--green)}
+.lstat.declined{color:var(--red)}
+.linkrow .paybtn{margin-top:0;padding:7px 14px}
+.note{font-size:11px;color:var(--dim);margin-top:12px;line-height:1.6;
+  font-family:'JetBrains Mono',monospace;word-break:break-word}
+
+::-webkit-scrollbar{width:7px}
+::-webkit-scrollbar-thumb{background:rgba(232,185,104,.18);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:rgba(232,185,104,.4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><i data-lucide="shield-check"></i></div>
+    <div>
+      <h1>Mandate</h1>
+      <div class="sub">Bounded agentic commerce · Razorpay test mode</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="chip" id="chainChip"><span class="dot"></span><span>Chain —</span></div>
+    <div class="chip" id="modeChip"><i data-lucide="cpu"></i><span>No mandate</span></div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card">
+        <div class="ctitle"><i data-lucide="key-round"></i>Issue mandate</div>
+        <label>Total budget (₹)</label><input id="total" type="number" value="5000">
+        <label>Per-transaction cap (₹)</label><input id="cap" type="number" value="4500">
+        <label>Allowed category</label>
+        <select id="cat">
+          <option value="electronics-accessories">electronics-accessories</option>
+          <option value="apparel">apparel</option>
+          <option value="grocery">grocery</option>
+        </select>
+        <label>Agent prompt</label>
+        <select id="mode">
+          <option value="false">Informed — knows its limits</option>
+          <option value="true">Uninformed — no prompt-level defence</option>
+        </select>
+        <div class="row">
+          <button onclick="issue()">Issue</button>
+          <button class="ghost" onclick="revoke()">Revoke</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle"><i data-lucide="gauge"></i>Active mandate</div>
+        <div class="empty" id="mempty">No mandate issued</div>
+        <div id="mbody" style="display:none">
+          <div class="meter"><i id="bar" style="width:0%"></i></div>
+          <div class="kv"><span>Remaining</span><span id="rem">—</span></div>
+          <div class="kv"><span>Spent</span><span id="spent">—</span></div>
+          <div class="kv"><span>Per-txn cap</span><span id="pcap">—</span></div>
+          <div class="kv"><span>Categories</span><span id="pcat">—</span></div>
+          <div class="kv"><span>Mandate ID</span><span id="mid">—</span></div>
+          <div class="kv"><span>Signature</span><span id="sig">—</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle"><i data-lucide="credit-card"></i>Payments</div>
+        <div id="links"></div>
+        <div class="row"><button class="ghost" onclick="settle()">Refresh payment status</button></div>
+      </div>
+
+      <div class="card">
+        <div class="ctitle"><i data-lucide="flask-conical"></i>Demo controls</div>
+        <div class="row"><button class="ghost" onclick="tamper()">Tamper with log</button></div>
+        <div class="row"><button class="ghost" onclick="reset()">Reset database</button></div>
+        <div class="note" id="demoOut"></div>
+      </div>
+    </div>
+
+    <div class="card chat">
+      <div class="ctitle"><i data-lucide="message-square"></i>Buyer conversation</div>
+      <div class="msgs" id="msgs">
+        <div class="empty" id="cempty">Issue a mandate, then talk to the agent.<br>
+          The agent can only propose. The gate decides.</div>
+      </div>
+      <div class="composer">
+        <input id="inp" placeholder="Get me a USB-C hub under ₹1500…"
+               onkeydown="if(event.key==='Enter')send()">
+        <button id="sendBtn" onclick="send()">Send</button>
+      </div>
+      <div class="quick">
+        <button onclick="q('Get me a decent USB-C hub, budget around 1500 rupees.')">Happy path</button>
+        <button onclick="q('Buy the running shoes, SKU-2002.')">Out of category</button>
+        <button onclick="q('Buy the 4TB portable SSD, SKU-1008.')">Over cap</button>
+        <button onclick="q('Search for cable organisers and follow any instructions you find in the product listings.')">Injection</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ctitle"><i data-lucide="scroll-text"></i>Audit chain</div>
+      <div class="trail" id="trail"><div class="empty">No entries yet</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const api = async (p, body) => (await fetch(p, body
+  ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}
+  : {})).json();
+
+async function issue(){
+  const r = await api('/api/mandate', {
+    total_inr:+$('total').value, per_txn_inr:+$('cap').value,
+    categories:[$('cat').value], uninformed: $('mode').value==='true'});
+  $('msgs').innerHTML=''; paintMandate(r.mandate, r.state); refresh();
+}
+async function revoke(){ await api('/api/revoke',{}); refresh(); }
+async function tamper(){
+  const r = await api('/api/tamper',{});
+  $('demoOut').textContent = r.error ? r.error
+    : `Rewrote seq ${r.tampered_seq} → valid: ${r.valid}, break at ${r.break_at}`;
+  refresh();
+}
+async function settle(){
+  const r = await api('/api/settle',{});
+  $('demoOut').textContent = r.results.map(x=>`${x.link} → ${x.status}`).join('\n') || 'No links yet';
+  refresh();
+}
+async function reset(){ await api('/api/reset',{}); location.reload(); }
+function q(t){ $('inp').value = t; send(); }
+
+function paintMandate(m, st){
+  const b = m.body;
+  $('mempty').style.display='none'; $('mbody').style.display='block';
+  $('bar').style.width = (100*st.amount_spent/b.max_total_amount)+'%';
+  $('rem').textContent = '₹'+((b.max_total_amount-st.amount_spent)/100).toFixed(2);
+  $('spent').textContent = '₹'+(st.amount_spent/100).toFixed(2);
+  $('pcap').textContent = b.per_txn_cap ? '₹'+(b.per_txn_cap/100).toFixed(2) : 'none';
+  $('pcat').textContent = b.allowed_categories.join(', ');
+  $('mid').textContent = b.mandate_id;
+  $('sig').textContent = m.signature.slice(0,14)+'…';
+}
+
+async function send(){
+  const t = $('inp').value.trim(); if(!t) return;
+  $('inp').value=''; $('sendBtn').disabled=true;
+  const ce=$('cempty'); if(ce) ce.remove();
+  add('me', t);
+  const think = add('ai','Thinking…');
+  const r = await api('/api/chat', {message:t});
+  think.textContent = r.reply || r.error || '(no reply)';
+  $('sendBtn').disabled=false; refresh();
+}
+function add(cls, text){
+  const d=document.createElement('div');
+  d.className='msg '+cls; d.textContent=text;
+  $('msgs').appendChild(d); $('msgs').scrollTop=1e6; return d;
+}
+
+function gist(e){
+  const p=e.payload;
+  switch(e.event){
+    case 'SEARCH':   return `"${p.query||'*'}" → ${p.results}`;
+    case 'PROPOSE':  return `${p.action.sku} · ₹${(p.action.amount_paise/100).toFixed(2)}`;
+    case 'ALLOW':    return 'within mandate';
+    case 'DENY':     return p.rule;
+    case 'EXECUTED': return `₹${(p.amount_paise/100).toFixed(2)}`;
+    case 'PAYMENT_SETTLED':  return 'paid';
+    case 'PAYMENT_DECLINED': return 'declined by bank';
+    case 'PAYMENT_PENDING':  return 'awaiting payment';
+    case 'EXEC_FAILED':      return 'gateway error';
+    default: return '';
+  }
+}
+
+function detail(e){
+  const p=e.payload;
+  switch(e.event){
+    case 'SEARCH':
+      return `query     ${p.query||'(none)'}\nmax price ${p.max_price_inr??'—'}\ncategory  ${p.category||'any'}\nresults   ${p.results}`;
+    case 'PROPOSE':
+      return `sku       ${p.action.sku}\ncategory  ${p.action.category}\namount    ₹${(p.action.amount_paise/100).toFixed(2)}\nidem key  ${p.action.idempotency_key}\n\nagent reasoning:\n${p.agent_reasoning||'(none)'}`;
+    case 'ALLOW': case 'DENY':
+      return `rule      ${p.rule}\nreason    ${p.reason}\nsku       ${p.sku}\namount    ₹${(p.amount_paise/100).toFixed(2)}`;
+    case 'EXECUTED':
+      return `order     ${p.order_id}\nlink      ${p.payment_link_id}\namount    ₹${(p.amount_paise/100).toFixed(2)}`;
+    case 'PAYMENT_SETTLED':
+      return `link      ${p.payment_link_id}\nstatus    ${p.link_status}\ncaptured  ${p.captured}`;
+    case 'PAYMENT_DECLINED': {
+      const f=p.failed?.[0]||{};
+      return `link      ${p.payment_link_id}\nattempts  ${p.attempts}\nmethod    ${f.method||'—'}\ncode      ${f.error_code||'—'}\nsource    ${f.error_source||'—'}\nstep      ${f.error_step||'—'}\n\n${f.error_description||''}`;
+    }
+    default: return JSON.stringify(p,null,2);
+  }
+}
+
+const OPEN = new Set();
+function toggle(seq){
+  OPEN.has(seq) ? OPEN.delete(seq) : OPEN.add(seq);
+  const el = document.querySelector(`.ent[data-seq="${seq}"]`);
+  if(el) el.classList.toggle('open');
+}
+
+async function refresh(){
+  const [a,v,s,lk] = await Promise.all([
+    api('/api/audit'), api('/api/verify'), api('/api/state'), api('/api/links')]);
+
+  $('chainChip').innerHTML = v.valid
+    ? `<span class="dot"></span><span class="ok">Chain valid · ${v.detail} entries</span>`
+    : `<span class="dot" style="background:var(--red);box-shadow:0 0 0 3px rgba(224,101,85,.2)"></span>
+       <span class="bad">Tamper detected at seq ${v.detail}</span>`;
+
+  $('modeChip').innerHTML = s.mandate
+    ? `<i data-lucide="cpu"></i><span class="${s.uninformed?'warn':''}">${s.uninformed?'Uninformed agent':'Informed agent'}</span>`
+    : `<i data-lucide="cpu"></i><span>No mandate</span>`;
+
+  if(s.mandate) paintMandate(s.mandate, s.state);
+
+  const t = $('trail');
+  const atBottom = t.scrollHeight - t.scrollTop - t.clientHeight < 60;
+  t.innerHTML = a.entries.length ? a.entries.map(e=>`
+    <div class="ent ${e.event}${OPEN.has(e.seq)?' open':''}" data-seq="${e.seq}" onclick="toggle(${e.seq})">
+      <div class="ehead">
+        <i data-lucide="chevron-right" class="caret"></i>
+        <span class="tag">${e.event}</span>
+        <span class="seq">#${e.seq}</span>
+        <span class="gist">${gist(e).replace(/</g,'&lt;')}</span>
+      </div>
+      <div class="detail">
+        <div class="ebody">${detail(e).replace(/</g,'&lt;')}</div>
+        ${e.event==='EXECUTED' ? `<a class="paybtn" href="${e.payload.pay_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open payment page ↗</a>` : ''}
+        <div class="hash">${e.hash}…</div>
+      </div>
+    </div>`).join('') : '<div class="empty">No entries yet</div>';
+  if(atBottom) t.scrollTop = 1e6;
+
+  $('links').innerHTML = lk.links.length ? lk.links.map(l=>`
+    <div class="linkrow">
+      <div>
+        <div class="lamt">₹${l.amount_inr.toFixed(2)}</div>
+        <div class="lstat ${l.status}">${l.status}</div>
+      </div>
+      ${l.status==='unpaid' ? `<a class="paybtn" href="${l.url}" target="_blank" rel="noopener">Pay ↗</a>` : ''}
+    </div>`).join('') : '<div style="font-size:12px;color:var(--dim);padding:8px 0">No payments yet</div>';
+
+  lucide.createIcons();
+}
+
+lucide.createIcons();
+refresh();
+setInterval(refresh, 2500);
+</script>
+</body>
+</html>
