@@ -8,8 +8,7 @@ bound to the Session rather than passed as a tool argument, so the model cannot
 name or substitute one.
 """
 import json
-
-from mandate.config import MERCHANT_ID
+from mandate.config import MERCHANT_ID, DEMO_MODE
 from mandate.db import db
 from mandate.mandate import get_state, commit_spend
 from mandate.gate import evaluate
@@ -90,18 +89,29 @@ def t_propose_checkout(sess, sku, qty=1, reasoning=""):
                 "rule": verdict.rule,
                 "reason": verdict.reason,
                 "gateway_error": None}
-
     try:
-        from mandate.config import DEMO_MODE
         if DEMO_MODE:
-            res = {"order_id": "order_DEMO_" + idem[-8:],
-                   "payment_link_id": "plink_DEMO_" + idem[-8:],
-                   "pay_url": "https://razorpay.com/",
+            res = {"order_id": "order_DEMO" + idem[-8:],
+                   "payment_link_id": "plink_DEMO" + idem[-8:],
+                   "pay_url": None,
                    "amount_paise": action["amount_paise"]}
         else:
             res = execute_payment(mid, dict(row), action["amount_paise"], idem)
+
         commit_spend(mid, action["amount_paise"])
         audit_append(mid, "EXECUTED", res)
+
+        return {"ok": True,
+                "status": "SIMULATED" if DEMO_MODE else "AWAITING_PAYMENT",
+                "note": ("Demo mode: no real payment was created."
+                         if DEMO_MODE else
+                         "An order and payment link were created. Money has NOT "
+                         "moved yet. The link must be completed to pay."),
+                "order_id": res["order_id"],
+                "pay_url": res["pay_url"],
+                "amount_inr": action["amount_paise"] / 100,
+                "title": row["title"]}
+
     except Exception as e:
         audit_append(mid, "EXEC_FAILED", {"sku": sku, "error": str(e)[:300]})
         return {"ok": False,

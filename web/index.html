@@ -181,7 +181,7 @@ button.ghost:hover{border-color:var(--gold);color:var(--gold);box-shadow:none;tr
     <div class="logo"><i data-lucide="shield-check"></i></div>
     <div>
       <h1>Mandate</h1>
-      <div class="sub">Bounded agentic commerce · Razorpay test mode</div>
+    <div class="sub" id="subtitle">Bounded agentic commerce · Razorpay test mode</div>
     </div>
     <div class="spacer"></div>
     <div class="chip" id="chainChip"><span class="dot"></span><span>Chain —</span></div>
@@ -236,7 +236,7 @@ button.ghost:hover{border-color:var(--gold);color:var(--gold);box-shadow:none;tr
       <div class="card">
         <div class="ctitle"><i data-lucide="flask-conical"></i>Demo controls</div>
         <div class="row"><button class="ghost" onclick="tamper()">Tamper with log</button></div>
-        <div class="row"><button class="ghost" onclick="reset()">Reset database</button></div>
+        <div class="row"><button class="ghost" onclick="reset()">Clear my session</button></div>
         <div class="note" id="demoOut"></div>
       </div>
     </div>
@@ -397,7 +397,7 @@ async function refresh(){
       </div>
       <div class="detail">
         <div class="ebody">${detail(e).replace(/</g,'&lt;')}</div>
-        ${e.event==='EXECUTED' ? `<a class="paybtn" href="${e.payload.pay_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open payment page ↗</a>` : ''}
+        ${e.event==='EXECUTED' && e.payload.pay_url && !e.payload.order_id.startsWith('order_DEMO') ? `<a class="paybtn" href="${e.payload.pay_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open payment page ↗</a>` : ''}
         <div class="hash">${e.hash}…</div>
       </div>
     </div>`).join('') : '<div class="empty">No entries yet</div>';
@@ -410,10 +410,19 @@ async function refresh(){
         <div class="lamt">₹${l.amount_inr.toFixed(2)}</div>
         <div class="lstat ${l.status}">${l.status}</div>
       </div>
-      ${l.status==='unpaid' ? `<a class="paybtn" href="${l.url}" target="_blank" rel="noopener">Pay ↗</a>` : ''}
+      ${l.status==='unpaid' && l.url ? `<a class="paybtn" href="${l.url}" target="_blank" rel="noopener">Pay ↗</a>` : ''}
     </div>`).join('') : '<div style="font-size:12px;color:var(--dim);padding:8px 0">No payments yet</div>';
-
+    if(!window._cfgDone){
+    window._cfgDone = true;
+    const c = await api('/api/config');
+    if(c.demo_mode){
+      $('subtitle').innerHTML = 'Bounded agentic commerce · '
+        + '<span style="color:var(--gold)">demo mode — payments simulated</span> · '
+        + 'Issue a mandate, then try the four buttons below the chat';
+    }
+  }
   lucide.createIcons();
+
 }
 
 lucide.createIcons();
