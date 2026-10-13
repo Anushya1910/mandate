@@ -4,6 +4,7 @@ Razorpay execution layer. Reached ONLY after the policy gate has approved an
 action. Test mode is enforced in config.razorpay_creds().
 """
 import json
+import time
 import hashlib
 
 import razorpay
@@ -24,6 +25,33 @@ def client():
     return _client
 
 
+def _retry(fn, attempts=3, delay=1.5):
+    """Retry transient NETWORK failures only.
+
+    Deliberately narrow. A declined payment, a validation error, or a quota
+    error is a real answer from Razorpay and must surface immediately. Only
+    connection-level failures — where we never learned the outcome — are
+    retried.
+    """
+    last = None
+    for i in range(attempts):
+        try:
+            return fn()
+        except Exception as e:
+            msg = str(e)
+            transient = ("Connection aborted" in msg
+                         or "ConnectionReset" in msg
+                         or "Connection reset" in msg
+                         or "timed out" in msg
+                         or "Max retries" in msg
+                         or "RemoteDisconnected" in msg)
+            if not transient:
+                raise
+            last = e
+            time.sleep(delay * (i + 1))
+    raise last
+
+
 def execute_payment(mandate_id, item, amount_paise, idem_key):
     """Create an order and a payment link. Idempotent on idem_key."""
     con = db()
@@ -33,25 +61,27 @@ def execute_payment(mandate_id, item, amount_paise, idem_key):
     if hit:
         return {"status": "replayed", **json.loads(hit["result"])}
 
-    order = client().order.create({
+    receipt = idem_key[:40]
+
+    order = _retry(lambda: client().order.create({
         "amount": amount_paise,
         "currency": "INR",
-        "receipt": idem_key[:40],          # Razorpay enforces receipt uniqueness
+        "receipt": receipt,
         "notes": {"mandate_id": mandate_id, "sku": item["sku"]},
-    })
+    }))
 
-    link = client().payment_link.create({
+    link = _retry(lambda: client().payment_link.create({
         "amount": amount_paise,
         "currency": "INR",
         "description": f'{item["title"]} (mandate {mandate_id})',
-        "reference_id": idem_key[:40],
+        "reference_id": receipt,
         "customer": {"name": "Agent Buyer",
                      "email": "buyer@example.com",
                      "contact": "+919812345678"},
         "notify": {"sms": False, "email": False},
         "reminder_enable": False,
         "notes": {"mandate_id": mandate_id},
-    })
+    }))
 
     result = {
         "order_id": order["id"],
@@ -70,22 +100,22 @@ def execute_payment(mandate_id, item, amount_paise, idem_key):
 
 
 def payment_link_status(link_id):
-    return client().payment_link.fetch(link_id)["status"]
+    return _retry(lambda: client().payment_link.fetch(link_id))["status"]
 
 
 def record_payment_outcome(mandate_id, link_id):
     """Fetch the real provider outcome for a link and append it to the chain.
 
-    Failed attempts do not appear in payment_link.payments, so we query the
-    order's payments directly.
+    Failed attempts do not appear in payment_link.payments, so the order's
+    payments are queried directly.
     """
-    link = client().payment_link.fetch(link_id)
+    link = _retry(lambda: client().payment_link.fetch(link_id))
     order_id = link.get("order_id")
 
     attempts = []
     if order_id:
         try:
-            resp = client().order.payments(order_id)
+            resp = _retry(lambda: client().order.payments(order_id))
             attempts = resp.get("items", [])
         except Exception as e:
             attempts = [{"fetch_failed": str(e)[:120]}]
@@ -116,6 +146,8 @@ def record_payment_outcome(mandate_id, link_id):
         event = "PAYMENT_SETTLED"
     elif failed:
         event = "PAYMENT_DECLINED"
+    elif order_id is None:
+        return detail                      # nothing to record yet
     else:
         event = "PAYMENT_PENDING"
 
@@ -124,7 +156,7 @@ def record_payment_outcome(mandate_id, link_id):
 
 
 def settle_check(mandate_id, force=False):
-    """Poll links under a mandate. Skips links already recorded as settled
+    """Poll links under a mandate. Skips links already in a terminal state
     unless force=True, so repeated polling does not bloat the chain."""
     con = db()
     executed = con.execute(

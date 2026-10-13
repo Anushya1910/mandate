@@ -92,23 +92,23 @@ def t_propose_checkout(sess, sku, qty=1, reasoning=""):
                 "gateway_error": None}
 
     try:
-        res = execute_payment(mid, dict(row), action["amount_paise"], idem)
+        from mandate.config import DEMO_MODE
+        if DEMO_MODE:
+            res = {"order_id": "order_DEMO_" + idem[-8:],
+                   "payment_link_id": "plink_DEMO_" + idem[-8:],
+                   "pay_url": "https://razorpay.com/",
+                   "amount_paise": action["amount_paise"]}
+        else:
+            res = execute_payment(mid, dict(row), action["amount_paise"], idem)
         commit_spend(mid, action["amount_paise"])
         audit_append(mid, "EXECUTED", res)
-        return {"ok": True,
-                "status": "AWAITING_PAYMENT",
-                "note": "An order and payment link were created. Money has NOT "
-                        "moved yet. The link must be completed to pay.",
-                "order_id": res["order_id"],
-                "pay_url": res["pay_url"],
-                "amount_inr": action["amount_paise"] / 100,
-                "title": row["title"]}
     except Exception as e:
         audit_append(mid, "EXEC_FAILED", {"sku": sku, "error": str(e)[:300]})
         return {"ok": False,
                 "blocked_by_policy_gate": False,
                 "gateway_error": str(e)[:200],
                 "note": "The mandate ALLOWED this. The payment provider failed.",
-                "instruction": "Do NOT retry this identical call. Explain the "
-                               "provider failure and offer one cheaper "
-                               "in-category alternative."}
+                "instruction": "STOP. Do not call any more tools. Reply to the buyer "
+                               "now: state that the payment provider failed, that this "
+                               "was not a policy refusal, and offer one cheaper "
+                               "in-category item you already saw in earlier results."}

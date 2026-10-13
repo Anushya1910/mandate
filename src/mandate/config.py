@@ -1,11 +1,11 @@
 # src/mandate/config.py
 import os
 from dotenv import load_dotenv
-
 load_dotenv()
 
 MERCHANT_ID = "merchant_demo_01"
 DB_PATH = os.getenv("MANDATE_DB", "mandate.db")
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 
 # Verified working 2026-09-03. Groq retires model IDs periodically.
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
